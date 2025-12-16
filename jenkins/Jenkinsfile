@@ -13,7 +13,7 @@ pipeline {
           sh '''
             terraform init
             terraform apply -auto-approve \
-              -var="image_name=ubuntu-22.04" \
+              -var="image_name=ununtu-22.04" \
               -var="flavor_name=m1.small" \
               -var="network_name=students-net" \
               -var="keypair=mac"
