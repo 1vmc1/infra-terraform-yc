@@ -11,6 +11,8 @@ pipeline {
       steps {
         dir('terraform') {
           sh '''
+            set -e
+
             terraform init
             terraform apply -auto-approve \
               -var="image_name=ununtu-22.04" \
@@ -25,16 +27,20 @@ pipeline {
     }
 
     stage('Ansible Configure') {
-  steps {
-    dir('ansible') {
-      sh '''
-        echo "[servers]" > inventory.ini
-        echo "vm ansible_host=$(cat ip.txt) ansible_user=ubuntu" >> inventory.ini
+      steps {
+        dir('ansible') {
+          sh '''
+            set -e
 
-        cat inventory.ini
+            echo "[servers]" > inventory.ini
+            echo "vm ansible_host=$(cat ip.txt) ansible_user=ubuntu" >> inventory.ini
 
-        ansible-playbook -i inventory.ini playbook.yml
-      '''
+            echo "=== Inventory ==="
+            cat inventory.ini
+            echo "================="
+
+            ansible-playbook -i inventory.ini playbook.yml
+          '''
         }
       }
     }
