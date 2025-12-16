@@ -27,6 +27,31 @@ pipeline {
             }
         }
 
+        stage('Wait for SSH') {
+            steps {
+                dir('ansible') {
+                    sh '''
+                        set -e
+                        VM_IP=$(cat ip.txt)
+
+                        echo "Waiting for SSH on ${VM_IP}..."
+
+                        for i in {1..30}; do
+                          if nc -z ${VM_IP} 22; then
+                            echo "SSH is up!"
+                            exit 0
+                          fi
+                          echo "SSH not ready yet, retrying..."
+                          sleep 5
+                        done
+
+                        echo "ERROR: SSH did not become available"
+                        exit 1
+                    '''
+                }
+            }
+        }
+
         stage('Ansible Configure') {
             steps {
                 dir('ansible') {
