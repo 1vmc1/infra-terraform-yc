@@ -25,13 +25,16 @@ pipeline {
     }
 
     stage('Ansible Configure') {
-      steps {
-        dir('ansible') {
-          sh '''
-            echo "[servers]" > inventory.ini
-            echo "vm ansible_host=$(cat ip.txt) ansible_user=ubuntu" >> inventory.ini
-            ansible-playbook playbook.yml
-          '''
+  steps {
+    dir('ansible') {
+      sh '''
+        echo "[servers]" > inventory.ini
+        echo "vm ansible_host=$(cat ip.txt) ansible_user=ubuntu" >> inventory.ini
+
+        cat inventory.ini
+
+        ansible-playbook -i inventory.ini playbook.yml
+      '''
         }
       }
     }
