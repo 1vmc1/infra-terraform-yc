@@ -1,45 +1,49 @@
 pipeline {
-  agent { label 'vmc2' }
+    agent { label 'vmc2' }
 
-  environment {
-    OS_CLOUD = 'mycloud'
-  }
-
-  stages {
-
-    stage('Terraform Apply') {
-      steps {
-        dir('terraform') {
-          sh '''
-            set -e
-
-            terraform init
-
-            terraform apply -auto-approve \
-              -var="image_name=ununtu-22.04" \
-              -var="flavor_name=m1.small" \
-              -var="network_name=sutdents-net" \
-              -var="keypair=mac"
-
-            terraform output -raw vm_ip > ../ansible/ip.txt
-          '''
-        }
-      }
+    environment {
+        OS_CLOUD = 'mycloud'
     }
 
-    stage('Ansible Configure') {
-      steps {
-        dir('ansible') {
-          sh '''
-            set -e
+    stages {
 
-            echo "[servers]" > inventory.ini
-            echo "vm ansible_host=$(cat ip.txt) ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory.ini
+        stage('Terraform Apply') {
+            steps {
+                dir('terraform') {
+                    sh '''
+                        set -e
 
-            echo "===== INVENTORY ====="
-            cat inventory.ini
-            echo "====================="
+                        terraform init
 
-            ansible-playbook -i inventory.ini playbook.yml
-          '''
+                        terraform apply -auto-approve \
+                          -var="image_name=ununtu-22.04" \
+                          -var="flavor_name=m1.small" \
+                          -var="network_name=sutdents-net" \
+                          -var="keypair=mac"
+
+                        terraform output -raw vm_ip > ../ansible/ip.txt
+                    '''
+                }
+            }
         }
+
+        stage('Ansible Configure') {
+            steps {
+                dir('ansible') {
+                    sh '''
+                        set -e
+
+                        echo "[servers]" > inventory.ini
+                        echo "vm ansible_host=$(cat ip.txt) ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory.ini
+
+                        echo "===== INVENTORY ====="
+                        cat inventory.ini
+                        echo "====================="
+
+                        ansible-playbook -i inventory.ini playbook.yml
+                    '''
+                }
+            }
+        }
+    }
+}
