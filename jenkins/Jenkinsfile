@@ -19,7 +19,7 @@ pipeline {
                           -var="image_name=ununtu-22.04" \
                           -var="flavor_name=m1.small" \
                           -var="network_name=sutdents-net" \
-                          -var="keypair=mac"
+                          -var="keypair=jenkins-key"
 
                         terraform output -raw vm_ip > ../ansible/ip.txt
                     '''
