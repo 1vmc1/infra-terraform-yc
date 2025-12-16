@@ -1,1 +1,46 @@
+pipeline {
+  agent { label 'vmc2' }
+
+  environment {
+    OS_CLOUD = 'mycloud'
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        git 'https://github.com/1vmc1/infra-openstack-lab5.git'
+      }
+    }
+
+    stage('Terraform Init & Apply') {
+      steps {
+        dir('terraform') {
+          sh '''
+            terraform init
+            terraform apply -auto-approve \
+              -var="image_name=ununtu-22.04" \
+              -var="flavor_name=m1.small" \
+              -var="network_name=students-net" \
+              -var="keypair=mac"
+
+            terraform output -raw vm_ip > ../ansible/ip.txt
+          '''
+        }
+      }
+    }
+
+    stage('Ansible Configure') {
+      steps {
+        dir('ansible') {
+          sh '''
+            echo "[servers]" > inventory.ini
+            echo "vm ansible_host=$(cat ip.txt) ansible_user=ubuntu" >> inventory.ini
+            ansible-playbook playbook.yml
+          '''
+        }
+      }
+    }
+  }
+}
 
