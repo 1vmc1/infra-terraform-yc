@@ -1,1 +1,21 @@
+- hosts: servers
+  become: yes
+  tasks:
+    - name: Update apt
+      apt:
+        update_cache: yes
+
+    - name: Install base packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - nginx
+        state: present
+
+    - name: Start nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
 
